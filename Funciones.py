@@ -15,23 +15,13 @@ from tkinter import messagebox
 from tkinter import filedialog
 from tkinter import Tk
 
-def clear():
-    if os.name == 'nt':  # Para Windows
-        os.system('cls')
-    else:  # Para MacOS y Linux
-        os.system('clear')
 
-
-def consultar_directorio(std):
-    ventana = Tk()
-    if std == 'Carpeta':
-        parent_dir = filedialog.askdirectory(initialdir="C:/", title='Seleccionar carpeta donde guardar las descargas')
-        ventana.destroy()
-        return parent_dir
-    elif std == 'Archivo':
-        parent_dir = filedialog.askopenfile(initialdir="C:/", title='Seleccione el archivo de texto con los enlaces.')
-        ventana.destroy()
-        return parent_dir
+def regresar_menu():
+    clear()
+    print('Para regresar al menú principal presione ESC.')
+    print("Presione una tecla para continuar...")
+    key = msvcrt.getwch()
+    return key
 
 
 def menu_inicio(parent_dir) -> str:
@@ -50,22 +40,6 @@ def menu_configuracion() -> str:
 
 def seleccionar_accion() -> Str:
     return input('¿Qué deseas hacer?\n\n1. Descarga rápida vídeo y audio\n2. Descarga vídeo seleccionando calidad\n3. Descarga audio.\n4. Volver al menu principal.\n\nOpción (1|2|3|4): ')
-
-
-def obtener_fichero_playlist(playlist_url, path, nombre_playlist):
-    playlist = Playlist(playlist_url)
-    nombre_playlist = input('Ingrese el nombre de la Palylist: ')
-    while nombre_playlist == '':
-        print('El nombre no puede estar vacío')
-        nombre_playlist = input('Ingrese el nombre de la Palylist: ')
-
-    ruta_fichero = os.path.join(path, nombre_playlist + '.txt')
-
-    with open(ruta_fichero, 'w') as f:
-        for url in playlist.video_urls:
-            f.write(url + '\n')
-
-    return ruta_fichero, nombre_playlist
 
 
 def print_proceso_terminado():
@@ -122,6 +96,41 @@ def descargar_portada(url, path):
     response = requests.get(url)
     img = Image.open(BytesIO(response.content))
     img.save(path)
+
+
+def consultar_directorio(std):
+    ventana = Tk()
+    if std == 'Carpeta':
+        parent_dir = filedialog.askdirectory(initialdir="C:/", title='Seleccionar carpeta donde guardar las descargas')
+        ventana.destroy()
+        return parent_dir
+    elif std == 'Archivo':
+        parent_dir = filedialog.askopenfile(initialdir="C:/", title='Seleccione el archivo de texto con los enlaces.')
+        ventana.destroy()
+        return parent_dir
+
+
+def obtener_fichero_playlist(playlist_url, path, nombre_playlist):
+    playlist = Playlist(playlist_url)
+    nombre_playlist = input('Ingrese el nombre de la Playlist: ')
+    while nombre_playlist == '':
+        print('El nombre no puede estar vacío...')
+        nombre_playlist = input('Ingrese el nombre de la Playlist: ')
+
+    ruta_fichero = os.path.join(path, nombre_playlist + '.txt')
+
+    with open(ruta_fichero, 'w') as f:
+        for url in playlist.video_urls:
+            f.write(url + '\n')
+
+    return ruta_fichero, nombre_playlist
+
+
+def clear():
+    if os.name == 'nt':  # Para Windows
+        os.system('cls')
+    else:  # Para MacOS y Linux
+        os.system('clear')
 
 
 def inicia_proceso_descarga(link, job, loop, nombre_playlist, parent_dir):
@@ -198,11 +207,3 @@ def inicia_proceso_descarga(link, job, loop, nombre_playlist, parent_dir):
         os.remove(parent_dir + '/portada.png')
         
         print_proceso_terminado()
-
-
-def regresar_menu():
-    clear()
-    print('Para regresar al menú principal presione ESC.')
-    print("Presione una tecla para continuar...")
-    key = msvcrt.getwch()
-    return key
