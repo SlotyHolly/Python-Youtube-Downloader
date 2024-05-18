@@ -82,10 +82,9 @@ def pide_url() -> Str:
 def procesa_fichero(ruta) -> list:
     list_enlaces = []
 
-    file_object = open(ruta, 'r')
-
-    for linea in file_object:
-        list_enlaces.append(linea) 
+    with open(ruta, 'r') as file_object:
+        for linea in file_object:
+            list_enlaces.append(linea) 
 
     file_object.close()
 
@@ -108,6 +107,8 @@ def consultar_directorio(std):
         parent_dir = filedialog.askopenfile(initialdir="C:/", title='Seleccione el archivo de texto con los enlaces.')
         ventana.destroy()
         return parent_dir
+    else:
+        print('Error en la selección de directorio')
 
 
 def obtener_fichero_playlist(playlist_url, path, nombre_playlist):

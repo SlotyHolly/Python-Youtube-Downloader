@@ -2,3 +2,4 @@ pytube==15.0.0
 autopep8==2.0.2
 eyed3==0.9.7
 pytube==15.0.0
+moviepy==1.0.3

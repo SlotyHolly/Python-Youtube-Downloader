@@ -31,12 +31,12 @@ if __name__ == "__main__":
 
         elif tarea == '2':  # Fichero de texto
             loop = True
-            ruta_fichero = consultar_directorio('Fichero')
+            ruta_fichero = consultar_directorio('Archivo')
             print('EL archivo seleccionado es : {0}'.format(ruta_fichero.name), end='\n')
             key = regresar_menu()
             if key == chr(27):
                 continue
-            enlaces = procesa_fichero(ruta_fichero)
+            enlaces = procesa_fichero(ruta_fichero.name)
 
         elif tarea == '3':  # Playlist
             loop = True
