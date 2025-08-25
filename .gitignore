@@ -7,3 +7,6 @@ __pycache__/
 *.log
 # Archivos de configuración de VSCode
 .vscode/
+main.spec
+build/
+dist/
