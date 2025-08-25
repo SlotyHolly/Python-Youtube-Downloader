@@ -8,7 +8,48 @@ job = 0
 nombre_playlist = ''
 enlaces = []
 
+
+import subprocess
+import sys
+
+def verificar_ffmpeg():
+    try:
+        subprocess.run(["ffmpeg", "-version"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+        return True
+    except Exception:
+        return False
+
+def instalar_ffmpeg():
+    import platform
+    sistema = platform.system()
+    print("FFmpeg no está instalado. Instalando automáticamente...")
+    if sistema == "Windows":
+        print("Instalando FFmpeg en Windows usando winget...")
+        try:
+            subprocess.run(["winget", "install", "--id", "BtbN.FFmpeg.GPL", "-e", "--accept-package-agreements", "--accept-source-agreements"], check=True)
+            print("FFmpeg instalado. Reinicia la terminal si es necesario.")
+        except Exception as e:
+            print(f"Error instalando FFmpeg con winget: {e}")
+            print("Por favor, instala FFmpeg manualmente y asegúrate de que esté en el PATH.")
+            sys.exit(1)
+    elif sistema == "Linux":
+        print("Instalando FFmpeg en Linux usando apt...")
+        try:
+            subprocess.run(["sudo", "apt", "update"], check=True)
+            subprocess.run(["sudo", "apt", "install", "-y", "ffmpeg"], check=True)
+            print("FFmpeg instalado.")
+        except Exception as e:
+            print(f"Error instalando FFmpeg con apt: {e}")
+            print("Por favor, instala FFmpeg manualmente usando el gestor de paquetes de tu distribución.")
+            sys.exit(1)
+    else:
+        print("Sistema operativo no soportado para instalación automática de FFmpeg.")
+        print("Por favor, instala FFmpeg manualmente y asegúrate de que esté en el PATH.")
+        sys.exit(1)
+
 if __name__ == "__main__":
+    if not verificar_ffmpeg():
+        instalar_ffmpeg()
 
     # Obtener ruta donde se guardan las descargas
     parent_dir = consultar_directorio('Carpeta')

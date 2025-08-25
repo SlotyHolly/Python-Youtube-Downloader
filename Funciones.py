@@ -135,76 +135,47 @@ def clear():
 
 
 def inicia_proceso_descarga(link, job, loop, nombre_playlist, parent_dir):
-    contador = 1
-
-    try:
-        yt = YouTube(link)
-    except:
-        print('Error en el link: {0}'.format(link))
-        return
-
-    nombre_video = ''
-
-    print('')
-    print('-------------------------------------------------------')
-    print('Título: {0}'.format(yt.title))
-    print('Autor: {0}'.format(yt.author))
-    print('')
-
-    video_y_audio = yt.streams.filter(progressive=True).order_by('resolution').desc().first()
-    vids = yt.streams.filter(mime_type='video/mp4').order_by('resolution').desc()
+    import yt_dlp
+    from yt_dlp.utils import DownloadError
+    
+    ydl_opts = {}
+    output_dir = parent_dir
+    if nombre_playlist:
+        output_dir = os.path.join(parent_dir, nombre_playlist)
+        os.makedirs(output_dir, exist_ok=True)
 
     if job == '1':  # Vídeo y audio rápido
-        video_y_audio.download(parent_dir + '\Video')
-        print_proceso_terminado()
-
+        ydl_opts = {
+            'outtmpl': os.path.join(output_dir, '%(title)s.%(ext)s'),
+            'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+            'merge_output_format': 'mp4',
+        }
     elif job == '2':  # Descargar vídeo y audio seleccionando calidad
-        num_video_descargar = 1
-
-        if not loop:
-            print('')
-            print('Seleccionar vídeo (1..{0})'.format(len(vids)))
-
-            for video in vids:
-                print('    ({1}) - {0}'.format(video, contador))
-                contador += 1
-
-            print('')
-
-            num_video_descargar = int(input('Nº vídeo: '))
-
-        num_video_descargar -= 1
-
-        nombre_video = vids[num_video_descargar].default_filename
-        nombre_video_final = 'f_' + nombre_video
-        vids[num_video_descargar].download(parent_dir + '/Video')
-
-        yt.streams.get_audio_only().download(parent_dir + '/Audio')
-
-        audioclip = AudioFileClip(parent_dir + '/Audio/' + nombre_video)
-
-        videoclip2 = VideoFileClip(parent_dir + '/Video/' + nombre_video)
-        videoclip2 = videoclip2.set_audio(audioclip)
-
-        videoclip2.write_videofile(parent_dir + '/Video/' + nombre_video_final)
-
-        os.remove(videoclip2.filename)
-        os.remove(audioclip.filename)
-
+        ydl_opts = {
+            'outtmpl': os.path.join(output_dir, '%(title)s.%(ext)s'),
+            'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+            'merge_output_format': 'mp4',
+        }
+        # Nota: Para selección de calidad personalizada, se puede extender aquí
     elif job == '3':  # Solo audio
-        if nombre_playlist == '':
-            ruta_fin = yt.streams.filter(only_audio=True, mime_type='audio/mp4').order_by('abr').desc().first().download(parent_dir)
-        else:
-            ruta_fin = yt.streams.filter(only_audio=True, mime_type='audio/mp4').order_by('abr').desc().first().download(parent_dir + '/' + nombre_playlist)
-        audioclip = AudioFileClip(ruta_fin, fps=44100)
-        file_mp3 = audioclip.filename.replace('.mp4', '.mp3')
-        audioclip.write_audiofile(file_mp3)
+        ydl_opts = {
+            'outtmpl': os.path.join(output_dir, '%(title)s.%(ext)s'),
+            'format': 'bestaudio/best',
+            'extractaudio': True,
+            'audioformat': 'mp3',
+            'postprocessors': [{
+                'key': 'FFmpegExtractAudio',
+                'preferredcodec': 'mp3',
+                'preferredquality': '192',
+            }],
+        }
+    else:
+        print('Opción no válida')
+        return
 
-        descargar_portada(yt.thumbnail_url, parent_dir + '/portada.png')
-        add_metadata(file_mp3, yt.title, yt.author, parent_dir + '/portada.png')
-
-        audioclip.close()
-        os.remove(audioclip.filename)
-        os.remove(parent_dir + '/portada.png')
-        
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            ydl.download([link])
         print_proceso_terminado()
+    except DownloadError as e:
+        print(f'Error al descargar: {e}')
